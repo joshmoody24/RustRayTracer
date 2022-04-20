@@ -14,7 +14,7 @@ pub fn random_in_unit_sphere() -> Vec3 {
 	let mut p: Vec3;
 	loop {
 		p = (Vec3{x: rng.gen::<f64>(), y: rng.gen::<f64>(), z: rng.gen::<f64>()} * 2.0) - Vec3{x:1.0,y:1.0,z:1.0};
-		if(p.length_squared() >= 1.0){
+		if p.length_squared() >= 1.0 {
 			break;
 		}
 	}

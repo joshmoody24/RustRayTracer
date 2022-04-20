@@ -9,7 +9,7 @@ mod camera;
 
 use crate::vec3::Vec3;
 use crate::ray::Ray;
-use crate::surface::{Surface, hit_record, Sphere};
+use crate::surface::{Sphere, Lambert};
 use crate::scene::{Scene};
 use crate::camera::{Camera};
 use rand::Rng;
@@ -21,7 +21,7 @@ fn main() {
 	
 	// image setup
 	let aspect_ratio: f64 = 16.0 / 8.0;
-	let image_width: u32 = 1024;
+	let image_width: u32 = 256;
 	let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
 
 	// world setup
@@ -34,7 +34,8 @@ fn main() {
 			y: 0.0,
 			z: -1.0,
 		},
-		radius: 0.5
+		radius: 0.5,
+		material: Box::new({Lambert {albedo: Vec3{x: 0.7, y: 0.3, z: 0.3}}})
 	}));
 
 	// floor
@@ -44,7 +45,8 @@ fn main() {
 			y: -100.5,
 			z: -1.0,
 		},
-		radius: 100.0
+		radius: 100.0,
+		material: Box::new({Lambert {albedo: Vec3{x: 0.8, y: 0.8, z: 0.0}}})
 	}));
 
 	// camera setup
@@ -53,8 +55,8 @@ fn main() {
 	let focal_length: f64 = 1.0;
 
 	// anti aliasing
-	let num_samples = 200;
-	let max_depth = 8;
+	let num_samples = 10;
+	let max_depth = 6;
 
 	let cam_origin = Vec3{x:0.0, y:0.0, z:0.0};
 	let cam_horizontal = Vec3{x:viewport_width, y:0.0, z:0.0};
@@ -113,12 +115,15 @@ fn ray_color(r: Ray, world: &Scene, depth: u32) -> Vec3 {
 	// second param is the bias
 	let rec = world.hit(r, 0.001, constants::INFINITY);
 	if rec.hit_anything {
-		let target: Vec3 = rec.p + rec.normal + random_unit_vector();
+		let scatter = rec.material.unwrap().scatter(r, rec);
+		let attenuation = scatter.0;
+		let scattered_ray = scatter.1;
+		
 		return ray_color(
-			Ray{origin: rec.p, direction: target-rec.p},
+			scattered_ray,
 			world,
 			depth - 1
-			) * 0.5;
+			) * attenuation;
 	}
 	// background
 	else{

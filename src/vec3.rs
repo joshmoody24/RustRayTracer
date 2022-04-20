@@ -78,5 +78,9 @@ impl Vec3 {
 			z: self.x * other.y - self.y * other.x
 		}
 	}
+	pub fn near_zero(self) -> bool {
+		let small: f64 = 1e-8;
+		return self.x.abs() < small && self.y.abs() < small && self.z.abs() < small;
+	}
 	pub const ZERO: Vec3 = Vec3{x:0.0,y:0.0,z:0.0};
 }

@@ -1,5 +1,5 @@
 use crate::ray::Ray;
-use crate::surface::{hit_record, Surface, Hit};
+use crate::surface::{HitRecord, Hit};
 use std::boxed::Box;
 
 pub struct Scene {
@@ -7,8 +7,8 @@ pub struct Scene {
 }
 
 impl Scene {
-	pub fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> hit_record {
-		let mut rec: hit_record = hit_record::NO_HIT;
+	pub fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> HitRecord {
+		let mut rec: HitRecord = HitRecord::NO_HIT;
 		let mut closest_so_far = t_max;
 
 		for s in &self.surfaces {

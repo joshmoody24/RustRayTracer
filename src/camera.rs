@@ -1,7 +1,5 @@
 use crate::vec3::Vec3;
 use crate::ray::Ray;
-use crate::surface::{Surface, hit_record, Sphere};
-use crate::scene::{Scene};
 
 pub struct Camera {
 	pub origin: Vec3,
