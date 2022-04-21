@@ -9,11 +9,11 @@ mod camera;
 
 use crate::vec3::Vec3;
 use crate::ray::Ray;
-use crate::surface::{Sphere, Lambert};
+use crate::surface::{Sphere, Lambert, Metal};
 use crate::scene::{Scene};
 use crate::camera::{Camera};
 use rand::Rng;
-use crate::constants::{random_unit_vector};
+//use crate::constants::{random_unit_vector};
 
 fn main() {
 
@@ -21,13 +21,20 @@ fn main() {
 	
 	// image setup
 	let aspect_ratio: f64 = 16.0 / 8.0;
-	let image_width: u32 = 256;
+	let image_width: u32 = 480;
 	let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
+
+	// materials setup
+	let floor_material = Box::new(Lambert {albedo: Vec3{x: 0.8, y: 0.8, z: 0.0}});
+	let center_material = Box::new(Lambert {albedo: Vec3{x: 0.7, y: 0.3, z: 0.3}});
+	let metal_material = Box::new(Metal {albedo: Vec3{x: 0.8, y: 0.8, z: 0.8}, roughness: 0.3});
+		let rough_metal_material = Box::new(Metal {albedo: Vec3{x: 0.8, y: 0.6, z: 0.2}, roughness: 0.9});
 
 	// world setup
 	let mut scene: Scene = Scene {
 		surfaces: Vec::new()
 	};
+	
 	scene.surfaces.push(Box::new(Sphere {
 		center: Vec3 {
 			x: 0.0,
@@ -35,7 +42,7 @@ fn main() {
 			z: -1.0,
 		},
 		radius: 0.5,
-		material: Box::new({Lambert {albedo: Vec3{x: 0.7, y: 0.3, z: 0.3}}})
+		material: center_material
 	}));
 
 	// floor
@@ -46,7 +53,28 @@ fn main() {
 			z: -1.0,
 		},
 		radius: 100.0,
-		material: Box::new({Lambert {albedo: Vec3{x: 0.8, y: 0.8, z: 0.0}}})
+		material: floor_material
+	}));
+
+	// metal fellas
+	scene.surfaces.push(Box::new(Sphere {
+		center: Vec3 {
+			x: -1.0,
+			y: 0.0,
+			z: -1.0,
+		},
+		radius: 0.5,
+		material: metal_material,
+	}));
+
+	scene.surfaces.push(Box::new(Sphere {
+		center: Vec3 {
+			x: 1.0,
+			y: 0.0,
+			z: -1.0,
+		},
+		radius: 0.5,
+		material: rough_metal_material,
 	}));
 
 	// camera setup
@@ -55,8 +83,8 @@ fn main() {
 	let focal_length: f64 = 1.0;
 
 	// anti aliasing
-	let num_samples = 10;
-	let max_depth = 6;
+	let num_samples = 200;
+	let max_depth = 7;
 
 	let cam_origin = Vec3{x:0.0, y:0.0, z:0.0};
 	let cam_horizontal = Vec3{x:viewport_width, y:0.0, z:0.0};
@@ -71,7 +99,6 @@ fn main() {
 	};
 
 	// render
-
 	let mut buffer: RgbImage = ImageBuffer::new(image_width, image_height);
 
 	for (x, y, pixel) in buffer.enumerate_pixels_mut() {
@@ -116,14 +143,19 @@ fn ray_color(r: Ray, world: &Scene, depth: u32) -> Vec3 {
 	let rec = world.hit(r, 0.001, constants::INFINITY);
 	if rec.hit_anything {
 		let scatter = rec.material.unwrap().scatter(r, rec);
-		let attenuation = scatter.0;
-		let scattered_ray = scatter.1;
-		
-		return ray_color(
-			scattered_ray,
-			world,
-			depth - 1
-			) * attenuation;
+		if scatter.0 {
+			let attenuation = scatter.1;
+			let scattered_ray = scatter.2;
+			
+			return ray_color(
+				scattered_ray,
+				world,
+				depth - 1
+				) * attenuation;
+		}
+		else{
+			return Vec3{x:0.0,y:0.0,z:0.0};
+		}
 	}
 	// background
 	else{

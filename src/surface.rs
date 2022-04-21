@@ -1,6 +1,6 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::constants::{random_unit_vector};
+use crate::constants::{random_unit_vector, random_in_unit_sphere};
 
 pub struct HitRecord<'a> {
 	pub hit_anything: bool,
@@ -82,7 +82,7 @@ impl Hit for Sphere {
 // the method used for all materials
 // that defines how they scatter light
 pub trait Scatter {
-	fn scatter(&self, r_in: Ray, rec: HitRecord) -> (Vec3, Ray);
+	fn scatter(&self, r_in: Ray, rec: HitRecord) -> (bool, Vec3, Ray);
 }
 
 pub struct Lambert {
@@ -90,13 +90,33 @@ pub struct Lambert {
 }
 
 impl Scatter for Lambert{
-	fn scatter(&self, r_in: Ray, rec: HitRecord) -> (Vec3, Ray) {
+	fn scatter(&self, r_in: Ray, rec: HitRecord) -> (bool, Vec3, Ray) {
 		let mut scatter_direction = rec.normal + random_unit_vector();
 		if scatter_direction.near_zero() {
 			scatter_direction = rec.normal;
 		}
 		let output_ray = Ray{origin: rec.p, direction: scatter_direction};
 		let output_attenuation = self.albedo;
-		return (output_attenuation, output_ray);
+		return (true, output_attenuation, output_ray);
 	}
+}
+
+pub struct Metal {
+	pub albedo: Vec3,
+	pub roughness: f64,
+}
+
+impl Scatter for Metal {
+	fn scatter(&self, r_in: Ray, rec: HitRecord) -> (bool, Vec3, Ray) {
+		let reflected: Vec3 = reflect(r_in.direction.unit_vector(), rec.normal);
+		let scattered = Ray{origin:rec.p, direction:reflected+random_in_unit_sphere()*self.roughness};
+		let attenuation = self.albedo;
+		let can_scatter = scattered.direction.dot(rec.normal) > 0.0;
+		return (can_scatter, attenuation, scattered);
+	}
+}
+
+// reflects a ray like a mirror
+fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+	return v - n*v.dot(n)*2.0;
 }
