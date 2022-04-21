@@ -16,12 +16,12 @@ use rand::Rng;
 //use crate::constants::{random_unit_vector};
 
 fn main() {
-
+	println!("Initializing...");
 	let mut rng = rand::thread_rng();
 	
 	// image setup
 	let aspect_ratio: f64 = 16.0 / 8.0;
-	let image_width: u32 = 480;
+	let image_width: u32 = 400;
 	let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
 
 	// materials setup
@@ -83,8 +83,8 @@ fn main() {
 	let focal_length: f64 = 1.0;
 
 	// anti aliasing
-	let num_samples = 200;
-	let max_depth = 7;
+	let num_samples = 100;
+	let max_depth = 50;
 
 	let cam_origin = Vec3{x:0.0, y:0.0, z:0.0};
 	let cam_horizontal = Vec3{x:viewport_width, y:0.0, z:0.0};
@@ -101,7 +101,17 @@ fn main() {
 	// render
 	let mut buffer: RgbImage = ImageBuffer::new(image_width, image_height);
 
+	println!("Beginning Render...");
+
+	let mut row: u32 = 0;
+	
 	for (x, y, pixel) in buffer.enumerate_pixels_mut() {
+		// track progress
+		if y != row {
+			row = y;
+			println!("Row: {} of {} ({}%)", row, image_height, ((row as f64 / image_height as f64) * 100.0).round());
+		}
+		
 		// big y = bottom of image
 		// so we invert it using this cursed code
 		let y: u32 = (-(y as i32) + image_height as i32) as u32;
