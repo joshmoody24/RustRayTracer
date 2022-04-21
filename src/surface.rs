@@ -1,6 +1,6 @@
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-use crate::constants::{random_unit_vector, random_in_unit_sphere};
+use crate::utility::{random_unit_vector, random_in_unit_sphere, random_double};
 
 pub struct HitRecord<'a> {
 	pub hit_anything: bool,
@@ -28,10 +28,6 @@ impl HitRecord<'_> {
 
 pub trait Hit {
 	fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> HitRecord;
-}
-
-pub struct Surface {
-	object: dyn Hit
 }
 
 pub struct Sphere {
@@ -90,7 +86,7 @@ pub struct Lambert {
 }
 
 impl Scatter for Lambert{
-	fn scatter(&self, r_in: Ray, rec: HitRecord) -> (bool, Vec3, Ray) {
+	fn scatter(&self, _r_in: Ray, rec: HitRecord) -> (bool, Vec3, Ray) {
 		let mut scatter_direction = rec.normal + random_unit_vector();
 		if scatter_direction.near_zero() {
 			scatter_direction = rec.normal;
@@ -116,7 +112,51 @@ impl Scatter for Metal {
 	}
 }
 
+pub struct Dielectric {
+	pub ior: f64,
+}
+
+impl Scatter for Dielectric {
+	fn scatter(&self, r_in: Ray, rec: HitRecord) -> (bool, Vec3, Ray) {
+		let attenuation = Vec3{x:1.0,y:1.0,z:1.0};
+		let refraction_ratio = if rec.front_face {1.0/self.ior} else {self.ior};
+		
+		let unit_direction = r_in.direction.unit_vector();
+		let cos_theta = (-unit_direction).dot(rec.normal).min(1.0);
+		let sin_theta = (1.0 - cos_theta*cos_theta).sqrt();
+		
+		let cannot_refract = refraction_ratio * sin_theta > 1.0;
+		let direction: Vec3;
+
+		if cannot_refract || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double() {
+			direction = reflect(unit_direction, rec.normal);
+		}
+		else{
+			direction = refract(unit_direction, rec.normal, refraction_ratio);
+		}
+
+		let scattered = Ray{origin:rec.p, direction:direction};
+		return(true, attenuation, scattered);
+	}
+}
+
+impl Dielectric {
+	fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+		// Use Schlick's approximation for reflectance
+		let mut r0 = (1.0-ref_idx) / (1.0+ref_idx);
+		r0 = r0*r0;
+		return r0 + (1.0-r0)*(1.0-cosine).powf(5.0);
+	}
+}
+
 // reflects a ray like a mirror
 fn reflect(v: Vec3, n: Vec3) -> Vec3 {
 	return v - n*v.dot(n)*2.0;
+}
+
+fn refract(uv: Vec3, n: Vec3, etai_over_etat: f64) -> Vec3 {
+	let cos_theta = n.dot(-uv).min(1.0);
+	let r_out_perp = (uv + n*cos_theta) * etai_over_etat;
+	let r_out_parallel = n * -(((1.0 - r_out_perp.length_squared()) as f64).abs().sqrt());
+	return r_out_perp + r_out_parallel;
 }

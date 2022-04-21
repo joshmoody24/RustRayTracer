@@ -5,8 +5,8 @@ use crate::vec3::Vec3;
 use rand::Rng;
 
 // utility functions
-pub fn degrees_to_radians(degrees: f64){
-	degrees * PI / 180.0;
+pub fn degrees_to_radians(degrees: f64) -> f64{
+	degrees * PI / 180.0
 }
 
 pub fn random_in_unit_sphere() -> Vec3 {
@@ -23,4 +23,9 @@ pub fn random_in_unit_sphere() -> Vec3 {
 
 pub fn random_unit_vector() -> Vec3{
 	return random_in_unit_sphere().unit_vector();
+}
+
+pub fn random_double() -> f64 {
+	let mut rng = rand::thread_rng();
+	return rng.gen::<f64>();
 }
