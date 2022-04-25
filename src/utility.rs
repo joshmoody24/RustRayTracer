@@ -29,3 +29,9 @@ pub fn random_double() -> f64 {
 	let mut rng = rand::thread_rng();
 	return rng.gen::<f64>();
 }
+
+pub fn random_between(min: f64, max:f64) -> f64 {
+	let range = (max - min).abs();
+	let mut rng = rand::thread_rng();
+	return min + range*rng.gen::<f64>();
+}

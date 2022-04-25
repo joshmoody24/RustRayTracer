@@ -27,7 +27,7 @@ fn main() {
 	let floor_material = Box::new(Lambert {albedo: Vec3{x: 0.8, y: 0.8, z: 0.0}});
 	let center_material = Box::new(Lambert {albedo: Vec3{x: 0.1, y: 0.2, z: 0.5}});
 	let metal_material = Box::new(Metal {albedo: Vec3{x: 0.8, y: 0.8, z: 0.8}, roughness: 0.1});
-		let glass_material = Box::new(Dielectric {ior: 1.33});
+	let glass_material = Box::new(Dielectric {ior: 1.33});
 
 	// world setup
 	let mut scene: Scene = Scene {
@@ -78,12 +78,21 @@ fn main() {
 	//let r = (PI/4.0).cos();
 
 	// camera
-	let camera: Camera = Camera::create(
-		Vec3{x:-2.0,y:2.0,z:1.0},
-		Vec3{x:0.0,y:0.0,z:-1.0},
-		Vec3{x:0.0,y:1.0,z:0.0},
-		30.0,
-		aspect_ratio
+	let look_from = Vec3{x:3.0,y:3.0,z:2.0};
+	let look_at = Vec3{x:0.0,y:0.0,z:-1.0};
+	let v_up = Vec3{x:0.0,y:1.0,z:0.0};
+	let fov = 20.0;
+	let aperture = 2.0;
+	let focus_dist = (look_from - look_at).length();
+	
+	let camera: Camera = Camera::new(
+		look_from,
+		look_at,
+		v_up,
+		fov,
+		aspect_ratio,
+		aperture,
+		focus_dist,
 	);
 
 	// anti aliasing
