@@ -1,4 +1,5 @@
 use std::ops::{Add, Sub, Mul, Div, Neg};
+use crate::utility::{random_double, random_between};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
@@ -58,6 +59,9 @@ impl Neg for Vec3 {
 }
 
 impl Vec3 {
+	pub fn new(x: f64, y:f64, z:f64) -> Vec3{
+		return Vec3{x,y,z};	
+	}
 	pub fn length(self) -> f64 {
 		let ls = self.length_squared();
 		ls.sqrt()
@@ -81,6 +85,12 @@ impl Vec3 {
 	pub fn near_zero(self) -> bool {
 		let small: f64 = 1e-8;
 		return self.x.abs() < small && self.y.abs() < small && self.z.abs() < small;
+	}
+	pub fn random() -> Vec3{
+		return Vec3::new(random_double(), random_double(), random_double());
+	}
+	pub fn random_between(min: f64, max: f64) -> Vec3{
+		return Vec3::new(random_between(min,max), random_between(min,max), random_between(min,max));
 	}
 	pub const ZERO: Vec3 = Vec3{x:0.0,y:0.0,z:0.0};
 }

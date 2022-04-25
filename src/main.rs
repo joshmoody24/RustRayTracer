@@ -20,70 +20,21 @@ fn main() {
 	
 	// image setup
 	let aspect_ratio: f64 = 16.0 / 9.0;
-	let image_width: u32 = 300;
+	let image_width: u32 = 100;
 	let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
-
-	// materials setup
-	let floor_material = Box::new(Lambert {albedo: Vec3{x: 0.8, y: 0.8, z: 0.0}});
-	let center_material = Box::new(Lambert {albedo: Vec3{x: 0.1, y: 0.2, z: 0.5}});
-	let metal_material = Box::new(Metal {albedo: Vec3{x: 0.8, y: 0.8, z: 0.8}, roughness: 0.1});
-	let glass_material = Box::new(Dielectric {ior: 1.33});
+	let num_samples = 10;
+	let max_depth = 10;
 
 	// world setup
-	let mut scene: Scene = Scene {
-		surfaces: Vec::new()
-	};
-	
-	scene.surfaces.push(Box::new(Sphere {
-		center: Vec3 {
-			x: 0.0,
-			y: 0.0,
-			z: -1.0,
-		},
-		radius: 0.5,
-		material: center_material
-	}));
-
-	// floor
-	scene.surfaces.push(Box::new(Sphere {
-		center: Vec3 {
-			x: 0.0,
-			y: -100.5,
-			z: -1.0,
-		},
-		radius: 100.0,
-		material: floor_material
-	}));
-
-	scene.surfaces.push(Box::new(Sphere {
-		center: Vec3 {
-			x: -1.0,
-			y: 0.0,
-			z: -1.0,
-		},
-		radius: 0.5,
-		material: glass_material,
-	}));
-
-	scene.surfaces.push(Box::new(Sphere {
-		center: Vec3 {
-			x: 1.0,
-			y: 0.0,
-			z: -1.0,
-		},
-		radius: 0.5,
-		material: metal_material,
-	}));
-
-	//let r = (PI/4.0).cos();
+	let scene = Scene::random_scene();
 
 	// camera
-	let look_from = Vec3{x:3.0,y:3.0,z:2.0};
-	let look_at = Vec3{x:0.0,y:0.0,z:-1.0};
-	let v_up = Vec3{x:0.0,y:1.0,z:0.0};
+	let look_from = Vec3::new(13.0,2.0,3.0);
+	let look_at = Vec3::new(0.0,0.0,0.0);
+	let v_up = Vec3::new(0.0,1.0,0.0);
 	let fov = 20.0;
-	let aperture = 2.0;
-	let focus_dist = (look_from - look_at).length();
+	let aperture = 0.1;
+	let focus_dist = 10.0;
 	
 	let camera: Camera = Camera::new(
 		look_from,
@@ -94,10 +45,6 @@ fn main() {
 		aperture,
 		focus_dist,
 	);
-
-	// anti aliasing
-	let num_samples = 50;
-	let max_depth = 20;
 
 	// render
 	let mut buffer: RgbImage = ImageBuffer::new(image_width, image_height);
