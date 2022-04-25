@@ -76,10 +76,10 @@ impl Scene {
 		// add the big spheres
 		let material1 = Box::new(Dielectric{ior:1.5});
 		let material2 = Box::new(Lambert{albedo:Vec3::new(0.4,0.2,0.1)});
-		let material3 = Box::new(Metal{albedo:Vec3::new(0.7,0.6,0.5), 0.0});
-		scene.surfaces.push(Sphere{center:Vec3::new(0.0,1.0,0.0), radius:1.0, material: material1});
-		scene.surfaces.push(Sphere{center:Vec3::new(-4.0,1.0,0.0), radius:1.0, material2});
-		scene.surfaces.push(Sphere{center:Vec3::new(4.0,1.0,0.0), radius:1.0, material:material3});
+		let material3 = Box::new(Metal{albedo:Vec3::new(0.7,0.6,0.5), roughness: 0.0});
+		scene.surfaces.push(Box::new(Sphere{center:Vec3::new(0.0,1.0,0.0), radius:1.0, material: material1}));
+		scene.surfaces.push(Box::new(Sphere{center:Vec3::new(-4.0,1.0,0.0), radius:1.0, material: material2}));
+		scene.surfaces.push(Box::new(Sphere{center:Vec3::new(4.0,1.0,0.0), radius:1.0, material: material3}));
 		
 		scene
 	}
